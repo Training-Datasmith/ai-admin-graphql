@@ -64,7 +64,7 @@ trait UpdateTrait
 		}
 
 		if( isset( $entry['property'] ) && $item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface ) {
-			$item = $this->updateProperties( $manager, $item, $entry['property'] );
+			return $this->updateProperties( $manager, $item, $entry['property'] );
 		}
 
 		return $item;

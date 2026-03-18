@@ -37,14 +37,14 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		return [
 			'save' . str_replace( '/', '', ucwords( $domain, '/' ) ) => [
-				'type' => $this->orderOutputType( $domain ),
+				'type' => $this->orderOutputType(),
 				'args' => [
 					['name' => 'input', 'type' => $this->orderInputType( $domain ), 'description' => 'Item object'],
 				],
 				'resolve' => $this->saveItem( $domain ),
 			],
 			'save' . str_replace( '/', '', ucwords( $domain, '/' ) ) . 's' => [
-				'type' => Type::listOf( $this->orderOutputType( $domain ) ),
+				'type' => Type::listOf( $this->orderOutputType() ),
 				'args' => [
 					['name' => 'input', 'type' => Type::listOf( $this->orderInputType( $domain ) ), 'description' => 'Item objects'],
 				],
@@ -76,7 +76,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 				'resolve' => $this->aggregateItems( $domain ),
 			],
 			'get' . str_replace( '/', '', ucwords( $domain, '/' ) ) => [
-				'type' => $this->orderOutputType( $domain ),
+				'type' => $this->orderOutputType(),
 				'args' => [
 					['name' => 'id', 'type' => Type::string(), 'description' => 'Unique ID'],
 					['name' => 'include', 'type' => Type::listOf( Type::string() ), 'defaultValue' => [], 'description' => 'Domains to include'],
@@ -84,7 +84,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 				'resolve' => $this->getItem( $domain ),
 			],
 			'search' . str_replace( '/', '', ucwords( $domain, '/' ) ) . 's' => [
-				'type' => $this->types()->searchOutputType( $domain, fn( $path ) => $this->orderOutputType( $path ) ),
+				'type' => $this->types()->searchOutputType( $domain, fn( $path ): \GraphQL\Type\Definition\ObjectType => $this->orderOutputType() ),
 				'args' => [
 					['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'],
 					['name' => 'include', 'type' => Type::listOf( Type::string() ), 'defaultValue' => [], 'description' => 'Domains to include'],
@@ -108,13 +108,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderInput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context(), $path );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
@@ -125,9 +121,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->types()->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->types()->prefix( $path, $values )
 		] );
 	}
 
@@ -142,13 +136,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderProductInput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context(), $path );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
@@ -158,9 +148,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->types()->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->types()->prefix( $path, $values )
 		] );
 	}
 
@@ -175,13 +163,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderSubProductInput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context(), $path );
 
@@ -190,9 +174,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->types()->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->types()->prefix( $path, $values )
 		] );
 	}
 
@@ -207,13 +189,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderServiceInput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context(), $path );
 
@@ -223,9 +201,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->types()->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->types()->prefix( $path, $values )
 		] );
 	}
 
@@ -239,57 +215,41 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderOutputType';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 
 				$manager = \Aimeos\MShop::create( $this->context(), 'order' );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
 
 				$list['address'] = [
 					'type' => Type::listOf( $this->orderAddressOutputType() ),
-					'resolve' => function( $item ) {
-						return $item->getAddresses()->flat( 1 );
-					}
+					'resolve' => fn($item) => $item->getAddresses()->flat( 1 )
 				];
 
 				$list['coupon'] = [
 					'type' => Type::listOf( $this->orderCouponOutputType() ),
-					'resolve' => function( $item ) {
-						return $item->getCoupons()->keys()->all();
-					}
+					'resolve' => fn($item) => $item->getCoupons()->keys()->all()
 				];
 
 				$list['product'] = [
 					'type' => Type::listOf( $this->orderProductOutputType() ),
-					'resolve' => function( $item ) {
-						return $item->getProducts();
-					}
+					'resolve' => fn($item) => $item->getProducts()
 				];
 
 				$list['service'] = [
 					'type' => Type::listOf( $this->orderServiceOutputType() ),
-					'resolve' => function( $item ) {
-						return $item->getServices()->flat( 1 );
-					}
+					'resolve' => fn($item) => $item->getServices()->flat( 1 )
 				];
 
 				$list['status'] = [
 					'type' => Type::listOf( $this->orderStatusOutputType() ),
-					'resolve' => function( $item ) {
-						return $item->getStatuses()->flat( 1 );
-					}
+					'resolve' => fn($item) => $item->getStatuses()->flat( 1 )
 				];
 
 				return $list;
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order', $info->fieldName )
 		] );
 	}
 
@@ -303,19 +263,13 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderAddressOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/address' );
 				return $this->types()->fields( $manager->getSearchAttributes( false ) );
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Address\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/address', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Address\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/address', $info->fieldName )
 		] );
 	}
 
@@ -329,24 +283,16 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderCouponOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
-				return [
+			'fields' => fn() => [
 					'code' => [
 						'name' => 'code',
 						'description' => 'Coupon codes',
 						'type' => Type::String(),
 					],
-				];
-			},
-			'resolveField' => function( $codes, array $args, $context, ResolveInfo $info ) {
-				return (string) $codes;
-			}
+				],
+			'resolveField' => fn($codes, array $args, $context, ResolveInfo $info) => (string) $codes
 		] );
 	}
 
@@ -360,21 +306,15 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderProductOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/product' );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
 
 				$list['product'] = [
 					'type' => Type::listOf( $this->orderSubProductOutputType() ),
-					'resolve' => function( $item ) {
-						return $item->getProducts();
-					}
+					'resolve' => fn($item) => $item->getProducts()
 				];
 
 				$list['attribute'] = [
@@ -382,16 +322,12 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 					'args' => [
 						'type' => Type::String(),
 					],
-					'resolve' => function( $item, $args ) {
-						return $item->getAttributeItems( $args['type'] ?? null );
-					}
+					'resolve' => fn($item, $args) => $item->getAttributeItems( $args['type'] ?? null )
 				];
 
 				return $list;
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Product\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/product', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Product\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/product', $info->fieldName )
 		] );
 	}
 
@@ -405,13 +341,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderSubProductOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/product' );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
 
@@ -420,16 +352,12 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 					'args' => [
 						'type' => Type::String(),
 					],
-					'resolve' => function( $item, $args ) {
-						return $item->getAttributeItems( $args['type'] ?? null );
-					}
+					'resolve' => fn($item, $args) => $item->getAttributeItems( $args['type'] ?? null )
 				];
 
 				return $list;
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Product\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/product', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Product\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/product', $info->fieldName )
 		] );
 	}
 
@@ -443,19 +371,13 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderProductAttributeOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/product/attribute' );
 				return $this->types()->fields( $manager->getSearchAttributes( false ) );
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Product\Attribute\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/product/attribute', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Product\Attribute\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/product/attribute', $info->fieldName )
 		] );
 	}
 
@@ -469,13 +391,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderServiceOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/service' );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
 
@@ -484,9 +402,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 					'args' => [
 						'type' => Type::String(),
 					],
-					'resolve' => function( $item, $args ) {
-						return $item->getAttributeItems( $args['type'] ?? null );
-					}
+					'resolve' => fn($item, $args) => $item->getAttributeItems( $args['type'] ?? null )
 				];
 
 				$list['transaction'] = [
@@ -494,16 +410,12 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 					'args' => [
 						'type' => Type::String(),
 					],
-					'resolve' => function( $item, $args ) {
-						return $item->getTransactions( $args['type'] ?? null );
-					}
+					'resolve' => fn($item, $args) => $item->getTransactions( $args['type'] ?? null )
 				];
 
 				return $list;
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Service\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/service', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Service\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/service', $info->fieldName )
 		] );
 	}
 
@@ -517,19 +429,13 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderServiceAttributeOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/service/attribute' );
 				return $this->types()->fields( $manager->getSearchAttributes( false ) );
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Service\Attribute\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/service/attribute', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Service\Attribute\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/service/attribute', $info->fieldName )
 		] );
 	}
 
@@ -543,19 +449,13 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderServiceTransactionOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/service/transaction' );
 				return $this->types()->fields( $manager->getSearchAttributes( false ) );
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Service\Transaction\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/service/transaction', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Service\Transaction\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/service/transaction', $info->fieldName )
 		] );
 	}
 
@@ -569,19 +469,13 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'orderStatusOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context(), 'order/status' );
 				return $this->types()->fields( $manager->getSearchAttributes( false ) );
 			},
-			'resolveField' => function( \Aimeos\MShop\Order\Item\Status\Iface $item, array $args, $context, ResolveInfo $info ) {
-				return $this->types()->resolve( $item, 'order/status', $info->fieldName );
-			}
+			'resolveField' => fn(\Aimeos\MShop\Order\Item\Status\Iface $item, array $args, $context, ResolveInfo $info) => $this->types()->resolve( $item, 'order/status', $info->fieldName )
 		] );
 	}
 }

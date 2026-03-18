@@ -20,7 +20,7 @@ use GraphQL\Type\Definition\ScalarType;
  */
 class Json extends ScalarType
 {
-	private static $object;
+	private static ?\Aimeos\GraphQL\Type\Definition\Json $object = null;
 
 	public ?string $description = 'Arbitrary data encoded in JavaScript Object Notation (JSON)';
 

@@ -24,9 +24,6 @@ use Aimeos\MShop\Common\Item\Iface as ItemIface;
  */
 class Standard extends \Aimeos\Admin\Graphql\Standard
 {
-	private $type;
-
-
 	/**
 	 * Returns GraphQL schema definition for the available queries
 	 *

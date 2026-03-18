@@ -23,7 +23,7 @@ use Psr\Http\Message\UploadedFileInterface;
  */
 class Upload extends ScalarType
 {
-	private static $object;
+	private static ?\Aimeos\GraphQL\Type\Definition\Upload $object = null;
 
 	public ?string $description = 'File upload type';
 

@@ -57,7 +57,7 @@ trait ProviderTrait
 	 */
 	protected function getConfig( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			$this->access( $domain, 'get' );
 			$manager = \Aimeos\MShop::create( $this->context(), $domain );

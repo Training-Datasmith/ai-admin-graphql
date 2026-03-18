@@ -127,7 +127,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 				'resolve' => $this->getTree( $domain ),
 			],
 			'search' . str_replace( '/', '', ucwords( $domain, '/' ) ) . 's' => [
-				'type' => $this->types()->searchOutputType( $domain, fn( $path ) => $this->types()->siteOutputType() ),
+				'type' => $this->types()->searchOutputType( $domain, fn( $path ): \GraphQL\Type\Definition\ObjectType => $this->types()->siteOutputType() ),
 				'args' => [
 					['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'],
 					['name' => 'include', 'type' => Type::listOf( Type::string() ), 'defaultValue' => [], 'description' => 'Domains to include'],
@@ -236,7 +236,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function getPath( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): iterable {
 			$this->access( $domain, 'get' );
 			return $this->filters( $this->manager()->getPath( $args['id'], $args['include'] ) );
 		};
@@ -251,7 +251,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function getTree( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): \Aimeos\MShop\Common\Item\Iface {
 			$this->access( $domain, 'get' );
 			return $this->filter( $this->manager()->getTree( $args['id'], $args['include'], $args['level'] ) );
 		};
@@ -266,7 +266,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function insertItem( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			if( empty( $entry = $args['input'] ) ) {
 				throw new \Aimeos\Admin\Graphql\Exception( 'Parameter "input" must not be empty' );
@@ -304,7 +304,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function moveItem( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			$this->access( $domain, 'move' );
 			$this->manager()->move( $args['id'], $args['parentid'], $args['targetid'], $args['refid'] );
@@ -322,7 +322,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function searchItems( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): array {
 
 			$this->access( $domain, 'get' );
 
@@ -352,7 +352,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function searchTree( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): \Aimeos\Map {
 
 			$this->access( $domain, 'get' );
 			$manager = $this->manager();

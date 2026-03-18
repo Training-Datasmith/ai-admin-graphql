@@ -65,13 +65,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	{
 		$name = 'mediaInput';
 
-		if( isset( $this->type ) ) {
-			return $this->type;
-		}
-
-		return $this->type = new InputObjectType( [
+		return $this->type ?? $this->type = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context(), $path );
 				$list = $this->types()->fields( $manager->getSearchAttributes( false ) );
@@ -90,9 +86,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->types()->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->types()->prefix( $path, $values )
 		] );
 	}
 
@@ -119,7 +113,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 		}
 
 		if( isset( $entry['property'] ) && $item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface ) {
-			$item = $this->updateProperties( $manager, $item, $entry['property'] );
+			return $this->updateProperties( $manager, $item, $entry['property'] );
 		}
 
 		return $item;

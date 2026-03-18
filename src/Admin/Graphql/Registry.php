@@ -50,13 +50,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'Input';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 				$list = $this->fields( $manager->getSearchAttributes( false ) );
@@ -79,9 +75,7 @@ class Registry
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->prefix( $path, $values )
 		] );
 	}
 
@@ -96,20 +90,14 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'Input';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 				return $this->fields( $manager->getSearchAttributes( false ) );
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->prefix( $path, $values )
 		] );
 	}
 
@@ -124,13 +112,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'refInput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				if( $domains = $this->context->config()->get( 'admin/graphql/lists-domains', [] ) )
 				{
@@ -156,13 +140,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path . '/' . $domain, '/' ) ) . 'Input';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new InputObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new InputObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path, $domain ) {
+			'fields' => function() use ( $path, $domain ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 
@@ -171,9 +151,7 @@ class Registry
 
 				return $list;
 			},
-			'parseValue' => function( array $values ) use ( $path ) {
-				return $this->prefix( $path, $values );
-			}
+			'parseValue' => fn(array $values) => $this->prefix( $path, $values )
 		] );
 	}
 
@@ -188,13 +166,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'Output';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 				$list = $this->fields( $manager->getSearchAttributes( false ) );
@@ -205,9 +179,7 @@ class Registry
 					$list['groups'] = [
 						'type' => Type::listOf( Type::String() ),
 						'description' => 'List of group IDs assigned to the account',
-						'resolve' => function( $item, $args ) {
-							return $item->getGroups();
-						}
+						'resolve' => fn($item, $args) => $item->getGroups()
 					];
 				}
 
@@ -223,9 +195,7 @@ class Registry
 				{
 					$list['lists'] = [
 						'type' => $this->listsOutputType( $path . '/lists' ),
-						'resolve' => function( ItemIface $item, array $args ) {
-							return $item;
-						}
+						'resolve' => fn(ItemIface $item, array $args) => $item
 					];
 				}
 
@@ -236,9 +206,7 @@ class Registry
 						'args' => [
 							'type' => Type::listOf( Type::String() ),
 						],
-						'resolve' => function( $item, $args ) {
-							return $item->getPropertyItems( $args['type'] ?? null, false );
-						}
+						'resolve' => fn($item, $args) => $item->getPropertyItems( $args['type'] ?? null, false )
 					];
 				}
 
@@ -249,17 +217,13 @@ class Registry
 						'args' => [
 							'type' => Type::listOf( Type::String() ),
 						],
-						'resolve' => function( $item, $args ) {
-							return $item->getStockItems( $args['type'] ?? null, false );
-						}
+						'resolve' => fn($item, $args) => $item->getStockItems( $args['type'] ?? null, false )
 					];
 				}
 
 				return $list;
 			},
-			'resolveField' => function( ItemIface $item, array $args, $context, ResolveInfo $info ) use ( $path ) {
-				return $this->resolve( $item, $path, $info->fieldName );
-			}
+			'resolveField' => fn(ItemIface $item, array $args, $context, ResolveInfo $info) => $this->resolve( $item, $path, $info->fieldName )
 		] );
 	}
 
@@ -274,13 +238,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'Output';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 				return $this->fields( $manager->getSearchAttributes( false ) );
@@ -307,20 +267,12 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'AggregateOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
-				return [
+			'fields' => fn() => [
 					'aggregates' => Type::string()
-				];
-			},
-			'resolveField' => function( array $entry, array $args, $context, ResolveInfo $info ) use ( $path ) {
-				return json_encode( $entry, JSON_FORCE_OBJECT );
-			}
+				],
+			'resolveField' => fn(array $entry, array $args, $context, ResolveInfo $info) => json_encode( $entry, JSON_FORCE_OBJECT )
 		] );
 	}
 
@@ -335,14 +287,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'ConfigOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
-				return [
+			'fields' => fn() => [
 					'code' => [
 						'name' => 'code',
 						'type' => Type::String(),
@@ -363,17 +310,16 @@ class Registry
 						'name' => 'default',
 						'type' => \Aimeos\GraphQL\Type\Definition\Json::type(),
 					],
-				];
-			},
-			'resolveField' => function( $item, array $args, $context, ResolveInfo $info ) use ( $path ) {
-				switch( $info->fieldName ) {
+				],
+			'resolveField' => function ($item, array $args, $context, ResolveInfo $info) {
+                switch( $info->fieldName ) {
 					case 'code': return $item->getCode();
 					case 'label': return $item->getLabel();
 					case 'type': return $item->getType();
 					case 'required': return $item->isRequired();
 					case 'default': return $item->getDefault();
 				}
-			}
+            }
 		] );
 	}
 
@@ -388,13 +334,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'refOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				if( $domains = $this->context->config()->get( 'admin/graphql/lists-domains', [] ) )
 				{
@@ -406,9 +348,7 @@ class Registry
 								'listtype' => Type::listOf( Type::String() ),
 								'type' => Type::listOf( Type::String() ),
 							],
-							'resolve' => function( $item, $args ) use ( $domain ) {
-								return $item->getListItems( $domain, $args['listtype'] ?? null, $args['type'] ?? null, false );
-							}
+							'resolve' => fn($item, $args) => $item->getListItems( $domain, $args['listtype'] ?? null, $args['type'] ?? null, false )
 						];
 					}
 				}
@@ -430,13 +370,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path . '/' . $domain, '/' ) ) . 'Output';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path, $domain ) {
+			'fields' => function() use ( $path, $domain ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 
@@ -467,13 +403,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'Output';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 				return $this->fields( $manager->getSearchAttributes( false ) );
@@ -501,14 +433,9 @@ class Registry
 	{
 		$name = 'search' . str_replace( '/', '', ucwords( $path ) ) . 'Output';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path, $method ) {
-				return [
+			'fields' => fn() => [
 					'items' => [
 						'name' => 'items',
 						'description' => 'List of items',
@@ -519,11 +446,8 @@ class Registry
 						'description' => 'Total number of items',
 						'type' => Type::int(),
 					]
-				];
-			},
-			'resolveField' => function( array $map, array $args, $context, ResolveInfo $info ) {
-				return $map[$info->fieldName] ?? null;
-			}
+				],
+			'resolveField' => fn(array $map, array $args, $context, ResolveInfo $info) => $map[$info->fieldName] ?? null
 		] );
 	}
 
@@ -537,13 +461,9 @@ class Registry
 	{
 		$name = 'siteOutputType';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 				$manager = \Aimeos\MShop::create( $this->context, 'locale/site' );
 
 				$list = $this->fields( $manager->getSearchAttributes( false ) );
@@ -558,14 +478,16 @@ class Registry
 			},
 			'resolveField' => function( ItemIface $item, array $args, $context, ResolveInfo $info ) {
 
-				if( $item instanceof \Aimeos\MShop\Common\Item\Tree\Iface )
+				if( !$item instanceof \Aimeos\MShop\Common\Item\Tree\Iface )
 				{
-					if( $info->fieldName === 'children' ) {
-						return $item->getChildren();
-					} elseif( $info->fieldName === 'hasChildren' ) {
-						return $item->hasChildren();
-					}
+					return $this->resolve( $item, 'locale/site', $info->fieldName );
 				}
+                if ($info->fieldName === 'children') {
+                    return $item->getChildren();
+                }
+                if ($info->fieldName === 'hasChildren') {
+                    return $item->hasChildren();
+                }
 
 				return $this->resolve( $item, 'locale/site', $info->fieldName );
 			}
@@ -582,13 +504,9 @@ class Registry
 	{
 		$name = 'StockOutputType';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() {
+			'fields' => function(): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, 'stock' );
 				return $this->fields( $manager->getSearchAttributes( false ) );
@@ -615,13 +533,9 @@ class Registry
 	{
 		$name = str_replace( '/', '', ucwords( $path, '/' ) ) . 'TreeOutput';
 
-		if( isset( $this->types[$name] ) ) {
-			return $this->types[$name];
-		}
-
-		return $this->types[$name] = new ObjectType( [
+		return $this->types[$name] ?? $this->types[$name] = new ObjectType( [
 			'name' => $name,
-			'fields' => function() use ( $path ) {
+			'fields' => function() use ( $path ): array {
 
 				$manager = \Aimeos\MShop::create( $this->context, $path );
 				$item = $manager->create();
@@ -638,9 +552,7 @@ class Registry
 				{
 					$list['lists'] = [
 						'type' => $this->listsOutputType( $path . '/lists' ),
-						'resolve' => function( ItemIface $item, array $args ) {
-							return $item;
-						}
+						'resolve' => fn(ItemIface $item, array $args) => $item
 					];
 				}
 
@@ -648,11 +560,12 @@ class Registry
 			},
 			'resolveField' => function( ItemIface $item, array $args, $context, ResolveInfo $info ) use ( $path ) {
 
-				if( $info->fieldName === 'children' ) {
-					return $item->getChildren();
-				} elseif( $info->fieldName === 'hasChildren' ) {
-					return $item->hasChildren();
-				}
+				if ($info->fieldName === 'children') {
+                    return $item->getChildren();
+                }
+                if ($info->fieldName === 'hasChildren') {
+                    return $item->hasChildren();
+                }
 
 				return $this->resolve( $item, $path, $info->fieldName );
 			}
@@ -672,7 +585,7 @@ class Registry
 
 		foreach( $attrs as $attr )
 		{
-			if( strpos( $attr->getCode(), ':' ) === false )
+			if( !str_contains( $attr->getCode(), ':' ) )
 			{
 				$code = $this->name( $attr->getCode() );
 
@@ -733,20 +646,16 @@ class Registry
 	 * @param string $name Name of the Aimeos type
 	 * @return \GraphQL\Type\Definition\Type GraphQL type
 	 */
-	public function type( string $name ) : Type
-	{
-		switch( $name )
-		{
-			case 'bool':
-			case 'boolean': return Type::boolean();
-			case 'float': return Type::float();
-			case 'int':
-			case 'integer': return Type::int();
-			case 'json': return \Aimeos\GraphQL\Type\Definition\Json::type();
-		}
-
-		return Type::string();
-	}
+	public function type(string $name): Type
+    {
+        return match ($name) {
+            'bool', 'boolean' => Type::boolean(),
+            'float' => Type::float(),
+            'int', 'integer' => Type::int(),
+            'json' => \Aimeos\GraphQL\Type\Definition\Json::type(),
+            default => Type::string(),
+        };
+    }
 
 
 	/**

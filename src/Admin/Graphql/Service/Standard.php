@@ -61,7 +61,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
 	 */
 	protected function getConfig( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			$context = $this->context();
 			$groups = $context->config()->get( 'admin/graphql/resource/' . $domain . '/get', [] );

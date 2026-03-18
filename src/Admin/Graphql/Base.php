@@ -22,7 +22,6 @@ abstract class Base
 	use UpdateTrait;
 
 	private \Aimeos\MShop\ContextIface $context;
-	private Registry $registry;
 
 
 	/**
@@ -31,10 +30,9 @@ abstract class Base
 	 * @param \Aimeos\MShop\ContextIface $context Context object
 	 * @param \Aimeos\Admin\Graphql\Registry Type registry object
 	 */
-	public function __construct( \Aimeos\MShop\ContextIface $context, Registry $registry )
+	public function __construct( \Aimeos\MShop\ContextIface $context, private Registry $registry )
 	{
 		$this->context = $context;
-		$this->registry = $registry;
 	}
 
 
@@ -65,7 +63,7 @@ abstract class Base
 	 */
 	protected function aggregateItems( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			$this->access( $domain, 'get' );
 			$manager = \Aimeos\MShop::create( $this->context(), $domain );
@@ -97,7 +95,7 @@ abstract class Base
 	 */
 	protected function deleteItems( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			$this->access( $domain, 'delete' );
 			\Aimeos\MShop::create( $this->context(), $domain )->delete( $args['id'] );
@@ -114,7 +112,7 @@ abstract class Base
 	 */
 	protected function getItem( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): \Aimeos\MShop\Common\Item\Iface {
 
 			$this->access( $domain, 'get' );
 			return $this->filter( \Aimeos\MShop::create( $this->context(), $domain )->get( $args['id'], $args['include'] ) );
@@ -154,7 +152,7 @@ abstract class Base
 	 */
 	protected function findItem( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): \Aimeos\MShop\Common\Item\Iface {
 
 			$this->access( $domain, 'get' );
 			return $this->filter( \Aimeos\MShop::create( $this->context(), $domain )->find( $args['code'], $args['include'] ) );
@@ -170,7 +168,7 @@ abstract class Base
 	 */
 	protected function findTypeItem( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): \Aimeos\MShop\Common\Item\Iface {
 
 			$this->access( $domain, 'get' );
 			return $this->filter( \Aimeos\MShop::create( $this->context(), $domain )->find( $args['code'], [], $args['domain'] ) );
@@ -186,7 +184,7 @@ abstract class Base
 	 */
 	protected function searchItems( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ): array {
 
 			$this->access( $domain, 'get' );
 			$manager = \Aimeos\MShop::create( $this->context(), $domain );
@@ -213,7 +211,7 @@ abstract class Base
 	 */
 	protected function saveItem( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			if( empty( $entry = $args['input'] ) ) {
 				throw new \Aimeos\Admin\Graphql\Exception( 'Parameter "input" must not be empty' );
@@ -243,7 +241,7 @@ abstract class Base
 	 */
 	protected function saveItems( string $domain ) : \Closure
 	{
-		return function( $root, $args, $context ) use ( $domain ) {
+		return function( $root, array $args, $context ) use ( $domain ) {
 
 			if( empty( $entries = (array) $args['input'] ) ) {
 				throw new \Aimeos\Admin\Graphql\Exception( 'Parameter "input" must not be empty' );
