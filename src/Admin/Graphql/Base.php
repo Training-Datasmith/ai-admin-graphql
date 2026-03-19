@@ -65,7 +65,8 @@ abstract class Base
             $this->access($domain, 'get');
             $manager = \Aimeos\MShop::create($this->context(), $domain);
 
-            $filter = $manager->filter()->order($args['sort'])->slice(0, $args['limit']);
+            $limit = min((int) $args['limit'], 10000);
+            $filter = $manager->filter()->order($args['sort'])->slice(0, $limit);
             $filter->add($filter->parse(json_decode($args['filter'], true)));
 
             return $manager->aggregate($filter, $args['key'], $args['value'], $args['type'])->all();
@@ -178,7 +179,8 @@ abstract class Base
             $this->access($domain, 'get');
             $manager = \Aimeos\MShop::create($this->context(), $domain);
 
-            $filter = $manager->filter()->order($args['sort'])->slice($args['offset'], $args['limit']);
+            $limit = min((int) $args['limit'], 10000);
+            $filter = $manager->filter()->order($args['sort'])->slice($args['offset'], $limit);
             $filter->add($filter->parse(json_decode($args['filter'], true)));
 
             $total = 0;
