@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2022-2026
  * @package Admin
  * @subpackage GraphQL
  */
-
 namespace Aimeos\Admin\Graphql\Supplier;
 
-use GraphQL\Type\Definition\Type;
-
+use Graph_Ql\Type\Definition\Type;
 /**
  * GraphQL class for special handling of suppliers
  *
@@ -30,16 +27,7 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
     public function query(string $domain): array
     {
         $list = parent::query($domain);
-
-        $list['findSupplier'] = [
-            'type' => $this->types()->outputType($domain),
-            'args' => [
-                ['name' => 'code', 'type' => Type::string(), 'description' => 'Unique code'],
-                ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-            ],
-            'resolve' => $this->findItem($domain),
-        ];
-
+        $list['findSupplier'] = ['type' => $this->types()->output_type($domain), 'args' => [['name' => 'code', 'type' => Type::string(), 'description' => 'Unique code'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->find_item($domain)];
         return $list;
     }
 }

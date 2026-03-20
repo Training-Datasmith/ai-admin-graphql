@@ -1,20 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2024
  * @package Admin
  * @subpackage GraphQL
  */
-
 namespace Aimeos\Admin\Graphql\Media;
 
-use Aimeos\GraphQL\Type\Definition\Upload;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\Type;
-
+use Aimeos\Graph_Ql\Type\Definition\Upload;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Type;
 /**
  * GraphQL class for special handling of media files
  *
@@ -23,8 +20,7 @@ use GraphQL\Type\Definition\Type;
  */
 class Standard extends \Aimeos\Admin\Graphql\Standard
 {
-    private InputObjectType $type;
-
+    private Input_Object_Type $type;
     /**
      * Returns GraphQL schema definition for the available mutations
      *
@@ -34,60 +30,34 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
     public function mutation(string $domain): array
     {
         $list = parent::mutation($domain);
-
-        $list['saveMedia'] = [
-            'type' => $this->types()->outputType($domain),
-            'args' => [
-                ['name' => 'input', 'type' => $this->mediaInputType($domain), 'description' => 'Item object'],
-            ],
-            'resolve' => $this->saveItem($domain),
-        ];
-        $list['saveMedias'] = [
-            'type' => Type::listOf($this->types()->outputType($domain)),
-            'args' => [
-                ['name' => 'input', 'type' => Type::listOf($this->mediaInputType($domain)), 'description' => 'Item objects'],
-            ],
-            'resolve' => $this->saveItems($domain),
-        ];
-
+        $list['saveMedia'] = ['type' => $this->types()->output_type($domain), 'args' => [['name' => 'input', 'type' => $this->media_input_type($domain), 'description' => 'Item object']], 'resolve' => $this->save_item($domain)];
+        $list['saveMedias'] = ['type' => Type::list_of($this->types()->output_type($domain)), 'args' => [['name' => 'input', 'type' => Type::list_of($this->media_input_type($domain)), 'description' => 'Item objects']], 'resolve' => $this->save_items($domain)];
         return $list;
     }
-
     /**
      * Defines the GraphQL media input type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\InputObjectType Input type definition
      */
-    public function mediaInputType(string $path): InputObjectType
+    public function media_input_type(string $path): Input_Object_Type
     {
         $name = 'mediaInput';
-
-        return $this->type ?? $this->type = new InputObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context(), $path);
-                $list = $this->types()->fields($manager->getSearchAttributes(false));
-                $item = $manager->create();
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\ListsRef\Iface) {
-                    $list['lists'] = $this->types()->listsInputType($path . '/lists');
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface) {
-                    $list['property'] = Type::listOf($this->types()->inputType($path . '/property'));
-                }
-
-                $list['file'] = ['type' => Upload::type(), 'description' => 'File upload'];
-                $list['filepreview'] = ['type' => Upload::type(), 'description' => 'Preview file upload'];
-
-                return $list;
-            },
-            'parseValue' => fn (array $values) => $this->types()->prefix($path, $values),
-        ]);
+        return $this->type ?? $this->type = new Input_Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context(), $path);
+            $list = $this->types()->fields($manager->get_search_attributes(false));
+            $item = $manager->create();
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Lists_Ref\Iface) {
+                $list['lists'] = $this->types()->lists_input_type($path . '/lists');
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Property_Ref\Iface) {
+                $list['property'] = Type::list_of($this->types()->input_type($path . '/property'));
+            }
+            $list['file'] = ['type' => Upload::type(), 'description' => 'File upload'];
+            $list['filepreview'] = ['type' => Upload::type(), 'description' => 'Preview file upload'];
+            return $list;
+        }, 'parseValue' => fn(array $values) => $this->types()->prefix($path, $values)]);
     }
-
     /**
      * Updates the item
      *
@@ -96,25 +66,18 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      * @param array $entry Associative list of key/value pairs of the item data
      * @return \Aimeos\MShop\Common\Item\Iface Updated item
      */
-    protected function updateItem(
-        \Aimeos\MShop\Common\Manager\Iface $manager,
-        \Aimeos\MShop\Common\Item\Iface $item,
-        array $entry
-    ): \Aimeos\MShop\Common\Item\Iface {
-        $item = $item->fromArray($entry, true);
-
+    protected function update_item(\Aimeos\M_Shop\Common\Manager\Iface $manager, \Aimeos\M_Shop\Common\Item\Iface $item, array $entry): \Aimeos\M_Shop\Common\Item\Iface
+    {
+        $item = $item->from_array($entry, true);
         if (isset($entry['media.file'])) {
             $item = $manager->upload($item, $entry['media.file'], $entry['media.filepreview'] ?? null);
         }
-
-        if (isset($entry['lists']) && $item instanceof \Aimeos\MShop\Common\Item\ListsRef\Iface) {
-            $item = $this->updateLists($manager, $item, $entry['lists']);
+        if (isset($entry['lists']) && $item instanceof \Aimeos\M_Shop\Common\Item\Lists_Ref\Iface) {
+            $item = $this->update_lists($manager, $item, $entry['lists']);
         }
-
-        if (isset($entry['property']) && $item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface) {
-            return $this->updateProperties($manager, $item, $entry['property']);
+        if (isset($entry['property']) && $item instanceof \Aimeos\M_Shop\Common\Item\Property_Ref\Iface) {
+            return $this->update_properties($manager, $item, $entry['property']);
         }
-
         return $item;
     }
 }

@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2024
  * @package Admin
  * @subpackage GraphQL
  */
-
 namespace Aimeos\Admin\Graphql\Locale\Site;
 
-use GraphQL\Type\Definition\Type;
-
+use Graph_Ql\Type\Definition\Type;
 /**
  * GraphQL class for special handling of locale sites
  *
@@ -21,8 +18,7 @@ use GraphQL\Type\Definition\Type;
  */
 class Standard extends \Aimeos\Admin\Graphql\Standard
 {
-    private \Aimeos\MShop\Common\Manager\Iface $manager;
-
+    private \Aimeos\M_Shop\Common\Manager\Iface $manager;
     /**
      * Returns GraphQL schema definition for the available mutations
      *
@@ -31,57 +27,8 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      */
     public function mutation(string $domain): array
     {
-        return [
-            'delete' . str_replace('/', '', ucwords($domain, '/')) => [
-                'type' => Type::string(),
-                'args' => [
-                    ['name' => 'id', 'type' => Type::string(), 'description' => 'Item ID'],
-                ],
-                'resolve' => $this->deleteItems($domain),
-            ],
-            'delete' . str_replace('/', '', ucwords($domain, '/')) . 's' => [
-                'type' => Type::listOf(Type::string()),
-                'args' => [
-                    ['name' => 'id', 'type' => Type::listOf(Type::string()), 'description' => 'List of item IDs'],
-                ],
-                'resolve' => $this->deleteItems($domain),
-            ],
-            'insert' . str_replace('/', '', ucwords($domain, '/')) => [
-                'type' => $this->types()->siteOutputType(),
-                'args' => [
-                    ['name' => 'input', 'type' => Type::nonNull($this->types()->inputType($domain)), 'description' => 'Item object'],
-                    ['name' => 'parentid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'ID of the parent site'],
-                    ['name' => 'refid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Site ID the new item should be inserted before'],
-                ],
-                'resolve' => $this->insertItem($domain),
-            ],
-            'move' . str_replace('/', '', ucwords($domain, '/')) => [
-                'type' => Type::String(),
-                'args' => [
-                    ['name' => 'id', 'type' => Type::nonNull(Type::string()), 'description' => 'ID of the site to move'],
-                    ['name' => 'parentid', 'type' => Type::string(), 'description' => 'ID of the old parent site'],
-                    ['name' => 'targetid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'ID of the new parent site'],
-                    ['name' => 'refid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Site ID the new item should be inserted before'],
-                ],
-                'resolve' => $this->moveItem($domain),
-            ],
-            'save' . str_replace('/', '', ucwords($domain, '/')) => [
-                'type' => $this->types()->siteOutputType(),
-                'args' => [
-                    ['name' => 'input', 'type' => $this->types()->inputType($domain), 'description' => 'Item object'],
-                ],
-                'resolve' => $this->saveItem($domain),
-            ],
-            'save' . str_replace('/', '', ucwords($domain, '/')) . 's' => [
-                'type' => Type::listOf($this->types()->siteOutputType()),
-                'args' => [
-                    ['name' => 'input', 'type' => Type::listOf($this->types()->inputType($domain)), 'description' => 'Item objects'],
-                ],
-                'resolve' => $this->saveItems($domain),
-            ],
-        ];
+        return ['delete' . str_replace('/', '', ucwords($domain, '/')) => ['type' => Type::string(), 'args' => [['name' => 'id', 'type' => Type::string(), 'description' => 'Item ID']], 'resolve' => $this->delete_items($domain)], 'delete' . str_replace('/', '', ucwords($domain, '/')) . 's' => ['type' => Type::list_of(Type::string()), 'args' => [['name' => 'id', 'type' => Type::list_of(Type::string()), 'description' => 'List of item IDs']], 'resolve' => $this->delete_items($domain)], 'insert' . str_replace('/', '', ucwords($domain, '/')) => ['type' => $this->types()->site_output_type(), 'args' => [['name' => 'input', 'type' => Type::non_null($this->types()->input_type($domain)), 'description' => 'Item object'], ['name' => 'parentid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'ID of the parent site'], ['name' => 'refid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Site ID the new item should be inserted before']], 'resolve' => $this->insert_item($domain)], 'move' . str_replace('/', '', ucwords($domain, '/')) => ['type' => Type::String(), 'args' => [['name' => 'id', 'type' => Type::non_null(Type::string()), 'description' => 'ID of the site to move'], ['name' => 'parentid', 'type' => Type::string(), 'description' => 'ID of the old parent site'], ['name' => 'targetid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'ID of the new parent site'], ['name' => 'refid', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Site ID the new item should be inserted before']], 'resolve' => $this->move_item($domain)], 'save' . str_replace('/', '', ucwords($domain, '/')) => ['type' => $this->types()->site_output_type(), 'args' => [['name' => 'input', 'type' => $this->types()->input_type($domain), 'description' => 'Item object']], 'resolve' => $this->save_item($domain)], 'save' . str_replace('/', '', ucwords($domain, '/')) . 's' => ['type' => Type::list_of($this->types()->site_output_type()), 'args' => [['name' => 'input', 'type' => Type::list_of($this->types()->input_type($domain)), 'description' => 'Item objects']], 'resolve' => $this->save_items($domain)]];
     }
-
     /**
      * Returns GraphQL schema definition for the available queries
      *
@@ -90,80 +37,22 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      */
     public function query(string $domain): array
     {
-        return [
-            'find' . str_replace('/', '', ucwords($domain, '/')) => [
-                'type' => $this->types()->siteOutputType(),
-                'args' => [
-                    ['name' => 'code', 'type' => Type::nonNull(Type::string()), 'description' => 'Unique code'],
-                    ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-                ],
-                'resolve' => $this->findItem($domain),
-            ],
-            'get' . str_replace('/', '', ucwords($domain, '/')) => [
-                'type' => $this->types()->siteOutputType(),
-                'args' => [
-                    ['name' => 'id', 'type' => Type::string(), 'description' => 'Unique ID'],
-                    ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-                ],
-                'resolve' => $this->getItem($domain),
-            ],
-            'get' . str_replace('/', '', ucwords($domain, '/')) . 'Path' => [
-                'type' => Type::listOf($this->types()->siteOutputType()),
-                'args' => [
-                    ['name' => 'id', 'type' => Type::nonNull(Type::string()), 'description' => 'Unique site ID'],
-                    ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-                ],
-                'resolve' => $this->getPath($domain),
-            ],
-            'get' . str_replace('/', '', ucwords($domain, '/')) . 'Tree' => [
-                'type' => $this->types()->siteOutputType(),
-                'args' => [
-                    ['name' => 'id', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Unique site ID'],
-                    ['name' => 'level', 'type' => Type::int(), 'defaultValue' => 3, 'description' => '1 = node only, 2 = with children, 3 = whole subtree'],
-                    ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-                ],
-                'resolve' => $this->getTree($domain),
-            ],
-            'search' . str_replace('/', '', ucwords($domain, '/')) . 's' => [
-                'type' => $this->types()->searchOutputType($domain, fn ($path): \GraphQL\Type\Definition\ObjectType => $this->types()->siteOutputType()),
-                'args' => [
-                    ['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'],
-                    ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-                    ['name' => 'sort', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Sort keys'],
-                    ['name' => 'offset', 'type' => Type::int(), 'defaultValue' => 0, 'description' => 'Slice offset'],
-                    ['name' => 'limit', 'type' => Type::int(), 'defaultValue' => 100, 'description' => 'Slice size'],
-                ],
-                'resolve' => $this->searchItems($domain),
-            ],
-            'search' . str_replace('/', '', ucwords($domain, '/')) . 'Tree' => [
-                'type' => Type::listOf($this->types()->siteOutputType()),
-                'args' => [
-                    ['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'],
-                    ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-                    ['name' => 'limit', 'type' => Type::int(), 'defaultValue' => 100, 'description' => 'Slice size'],
-                ],
-                'resolve' => $this->searchTree($domain),
-            ],
-        ];
+        return ['find' . str_replace('/', '', ucwords($domain, '/')) => ['type' => $this->types()->site_output_type(), 'args' => [['name' => 'code', 'type' => Type::non_null(Type::string()), 'description' => 'Unique code'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->find_item($domain)], 'get' . str_replace('/', '', ucwords($domain, '/')) => ['type' => $this->types()->site_output_type(), 'args' => [['name' => 'id', 'type' => Type::string(), 'description' => 'Unique ID'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->get_item($domain)], 'get' . str_replace('/', '', ucwords($domain, '/')) . 'Path' => ['type' => Type::list_of($this->types()->site_output_type()), 'args' => [['name' => 'id', 'type' => Type::non_null(Type::string()), 'description' => 'Unique site ID'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->get_path($domain)], 'get' . str_replace('/', '', ucwords($domain, '/')) . 'Tree' => ['type' => $this->types()->site_output_type(), 'args' => [['name' => 'id', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Unique site ID'], ['name' => 'level', 'type' => Type::int(), 'defaultValue' => 3, 'description' => '1 = node only, 2 = with children, 3 = whole subtree'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->get_tree($domain)], 'search' . str_replace('/', '', ucwords($domain, '/')) . 's' => ['type' => $this->types()->search_output_type($domain, fn($path): \Graph_Ql\Type\Definition\Object_Type => $this->types()->site_output_type()), 'args' => [['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'], ['name' => 'sort', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Sort keys'], ['name' => 'offset', 'type' => Type::int(), 'defaultValue' => 0, 'description' => 'Slice offset'], ['name' => 'limit', 'type' => Type::int(), 'defaultValue' => 100, 'description' => 'Slice size']], 'resolve' => $this->search_items($domain)], 'search' . str_replace('/', '', ucwords($domain, '/')) . 'Tree' => ['type' => Type::list_of($this->types()->site_output_type()), 'args' => [['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'], ['name' => 'limit', 'type' => Type::int(), 'defaultValue' => 100, 'description' => 'Slice size']], 'resolve' => $this->search_tree($domain)]];
     }
-
     /**
      * Returns the item if not removed for security reasons
      *
      * @param \Aimeos\MShop\Common\Item\Iface $item Item to check
      * @return \Aimeos\MShop\Common\Item\Iface Item if not removed
      */
-    protected function filter(\Aimeos\MShop\Common\Item\Iface $item): \Aimeos\MShop\Common\Item\Iface
+    protected function filter(\Aimeos\M_Shop\Common\Item\Iface $item): \Aimeos\M_Shop\Common\Item\Iface
     {
-        $siteid = (string) $this->context()->user()?->getSiteId();
-
-        if ($item->getSiteId() && strncmp($item->getSiteId(), $siteid, strlen($siteid))) {
+        $siteid = (string) $this->context()->user()?->get_site_id();
+        if ($item->get_site_id() && strncmp($item->get_site_id(), $siteid, strlen($siteid))) {
             throw new \Aimeos\Admin\Graphql\Exception('Forbidden', 403);
         }
-
         return $item;
     }
-
     /**
      * Returns the items if not removed for security reasons
      *
@@ -173,17 +62,14 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
     protected function filters(iterable $items): iterable
     {
         $list = [];
-        $siteid = (string) $this->context()->user()?->getSiteId();
-
+        $siteid = (string) $this->context()->user()?->get_site_id();
         foreach ($items as $id => $item) {
-            if (!($item->getSiteId() && strncmp($item->getSiteId(), $siteid, strlen($siteid)))) {
+            if (!($item->get_site_id() && strncmp($item->get_site_id(), $siteid, strlen($siteid)))) {
                 $list[$id] = $item;
             }
         }
-
         return $list;
     }
-
     /**
      * Returns the tree of parents including the given items as leaf nodes
      *
@@ -191,175 +77,140 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      * @param array $refs List of domains to fetch in addition
      * @return \Aimeos\Map List of parent items
      */
-    protected function getParents(\Aimeos\Map $items, array $refs): \Aimeos\Map
+    protected function get_parents(\Aimeos\Map $items, array $refs): \Aimeos\Map
     {
-        if (($parentIds = $items->getParentId()->filter())->isEmpty()) {
+        if (($parent_ids = $items->get_parent_id()->filter())->is_empty()) {
             return $items;
         }
-
         $manager = $this->manager();
-        $filter = $manager->filter()
-            ->add('locale.site.siteid', '=~', (string) $this->context()->user()?->getSiteId())
-            ->add('locale.site.id', '==', $parentIds->unique())
-            ->order(['-locale.site.level', 'sort:locale.site:position'])
-            ->slice(0, 0x7fffffff);
-
+        $filter = $manager->filter()->add('locale.site.siteid', '=~', (string) $this->context()->user()?->get_site_id())->add('locale.site.id', '==', $parent_ids->unique())->order(['-locale.site.level', 'sort:locale.site:position'])->slice(0, 0x7fffffff);
         $parents = $manager->search($filter, $refs);
-        $indexes = $parentIds->unique()->flip();
-        $itemkeys = $items->getId()->flip();
-
+        $indexes = $parent_ids->unique()->flip();
+        $itemkeys = $items->get_id()->flip();
         foreach ($parents as $pid => $parent) {
             if (isset($itemkeys[$pid])) {
-                $items[$itemkeys[$pid]]->addChild($items[$indexes[$pid]]);
+                $items[$itemkeys[$pid]]->add_child($items[$indexes[$pid]]);
                 unset($items[$indexes[$pid]]);
             } else {
-                $items[$indexes[$pid]] = $parent->addChild($items[$indexes[$pid]]);
+                $items[$indexes[$pid]] = $parent->add_child($items[$indexes[$pid]]);
             }
         }
-
-        return $this->getParents($items, $refs);
+        return $this->get_parents($items, $refs);
     }
-
     /**
      * Returns a closure for returning the nodes from the passed ID up to the root node
      *
      * @param string $domain Domain path of the manager
      * @return \Closure Anonymous method returning one item
      */
-    protected function getPath(string $domain): \Closure
+    protected function get_path(string $domain): \Closure
     {
         return function ($root, array $args, $context) use ($domain): iterable {
             $this->access($domain, 'get');
-            return $this->filters($this->manager()->getPath($args['id'], $args['include']));
+            return $this->filters($this->manager()->get_path($args['id'], $args['include']));
         };
     }
-
     /**
      * Returns a closure for returning the node tree
      *
      * @param string $domain Domain path of the manager
      * @return \Closure Anonymous method returning one item
      */
-    protected function getTree(string $domain): \Closure
+    protected function get_tree(string $domain): \Closure
     {
-        return function ($root, array $args, $context) use ($domain): \Aimeos\MShop\Common\Item\Iface {
+        return function ($root, array $args, $context) use ($domain): \Aimeos\M_Shop\Common\Item\Iface {
             $this->access($domain, 'get');
-            return $this->filter($this->manager()->getTree($args['id'], $args['include'], $args['level']));
+            return $this->filter($this->manager()->get_tree($args['id'], $args['include'], $args['level']));
         };
     }
-
     /**
      * Returns a closure for inserting a new node into the tree
      *
      * @param string $domain Domain path of the manager
      * @return \Closure Anonymous method returning one item
      */
-    protected function insertItem(string $domain): \Closure
+    protected function insert_item(string $domain): \Closure
     {
         return function ($root, array $args, $context) use ($domain) {
-
             if (empty($entry = $args['input'])) {
                 throw new \Aimeos\Admin\Graphql\Exception('Parameter "input" must not be empty');
             }
-
             $this->access($domain, 'insert');
             $manager = $this->manager();
-            $item = $manager->create()->fromArray($entry, true);
-
+            $item = $manager->create()->from_array($entry, true);
             return $manager->insert($item, $args['parentid'], $args['refid']);
         };
     }
-
     /**
      * Returns the manager for the site items
      *
      * @return \Aimeos\MShop\Common\Manager\Iface Manager object
      */
-    protected function manager(): \Aimeos\MShop\Common\Manager\Iface
+    protected function manager(): \Aimeos\M_Shop\Common\Manager\Iface
     {
         if (!isset($this->manager)) {
-            $this->manager = \Aimeos\MShop::create($this->context(), 'locale/site');
+            $this->manager = \Aimeos\M_Shop::create($this->context(), 'locale/site');
         }
-
         return $this->manager;
     }
-
     /**
      * Returns a closure for moving a node within the tree
      *
      * @param string $domain Domain path of the manager
      * @return \Closure Anonymous method returning one item
      */
-    protected function moveItem(string $domain): \Closure
+    protected function move_item(string $domain): \Closure
     {
         return function ($root, array $args, $context) use ($domain) {
-
             $this->access($domain, 'move');
             $this->manager()->move($args['id'], $args['parentid'], $args['targetid'], $args['refid']);
-
             return $args['id'];
         };
     }
-
     /**
      * Returns a closure for returning several items
      *
      * @param string $domain Domain path of the manager
      * @return \Closure Anonymous method returning several items
      */
-    protected function searchItems(string $domain): \Closure
+    protected function search_items(string $domain): \Closure
     {
         return function ($root, array $args, $context) use ($domain): array {
-
             $this->access($domain, 'get');
-
-            $manager = \Aimeos\MShop::create($this->context(), $domain);
+            $manager = \Aimeos\M_Shop::create($this->context(), $domain);
             $prefix = str_replace('/', '.', $domain);
-
             $filter = $manager->filter()->order($args['sort'])->slice($args['offset'], $args['limit']);
-            $filter->add($prefix . '.siteid', '=~', (string) $this->context()->user()?->getSiteId());
+            $filter->add($prefix . '.siteid', '=~', (string) $this->context()->user()?->get_site_id());
             $filter->add($filter->parse(json_decode($args['filter'], true)));
-
             $total = 0;
-            $items = $manager->search($filter, $args['include'], $total)->toArray();
-
-            return [
-                'items' => $items,
-                'total' => $total,
-            ];
+            $items = $manager->search($filter, $args['include'], $total)->to_array();
+            return ['items' => $items, 'total' => $total];
         };
     }
-
     /**
      * Returns a closure for searching the tree
      *
      * @param string $domain Domain path of the manager
      * @return \Closure Anonymous method returning one item
      */
-    protected function searchTree(string $domain): \Closure
+    protected function search_tree(string $domain): \Closure
     {
         return function ($root, array $args, $context) use ($domain): \Aimeos\Map {
-
             $this->access($domain, 'get');
             $manager = $this->manager();
-
             $filter = $manager->filter()->order(['-locale.site.level', 'sort:locale.site:position']);
-            $filter->add('locale.site.siteid', '=~', (string) $this->context()->user()?->getSiteId());
+            $filter->add('locale.site.siteid', '=~', (string) $this->context()->user()?->get_site_id());
             $filter->add($filter->parse(json_decode($args['filter'], true)));
-
             $items = $manager->search($filter->slice(0, $args['limit']), $args['include']);
-
             foreach ($items as $key => $item) {
-                if (isset($items[$item->getParentId()])) {
-                    $items[$item->getParentId()]->addChild($item);
+                if (isset($items[$item->get_parent_id()])) {
+                    $items[$item->get_parent_id()]->add_child($item);
                     unset($items[$key]);
                 }
             }
-
-            return $this->getParents($items->values(), $args['include']);
+            return $this->get_parents($items->values(), $args['include']);
         };
     }
-
     /**
      * Updates the item
      *
@@ -368,18 +219,13 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      * @param array $entry Associative list of key/value pairs of the item data
      * @return \Aimeos\MShop\Common\Item\Iface Updated item
      */
-    protected function updateItem(
-        \Aimeos\MShop\Common\Manager\Iface $manager,
-        \Aimeos\MShop\Common\Item\Iface $item,
-        array $entry
-    ): \Aimeos\MShop\Common\Item\Iface {
+    protected function update_item(\Aimeos\M_Shop\Common\Manager\Iface $manager, \Aimeos\M_Shop\Common\Item\Iface $item, array $entry): \Aimeos\M_Shop\Common\Item\Iface
+    {
         $super = $this->context()->view()->access(['super']);
-        $siteid = (string) $this->context()->user()?->getSiteId();
-
-        if (!$super && (!$siteid || !$item->getSiteId() || strncmp($item->getSiteId(), $siteid, strlen($siteid)))) {
+        $siteid = (string) $this->context()->user()?->get_site_id();
+        if (!$super && (!$siteid || !$item->get_site_id() || strncmp($item->get_site_id(), $siteid, strlen($siteid)))) {
             throw new \Aimeos\Admin\Graphql\Exception('Forbidden', 403);
         }
-
-        return $item->fromArray($entry, true);
+        return $item->from_array($entry, true);
     }
 }

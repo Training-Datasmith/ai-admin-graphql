@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2022-2026
  * @package Admin
  * @subpackage GraphQL
  */
-
 namespace Aimeos\Admin\Graphql\Customer;
 
-use GraphQL\Type\Definition\Type;
-
+use Graph_Ql\Type\Definition\Type;
 /**
  * GraphQL class for special handling of customers
  *
@@ -30,32 +27,10 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
     public function query(string $domain): array
     {
         $list = parent::query($domain);
-
-        $list['aggregateCustomers'] = [
-            'type' => $this->types()->aggregateOutputType($domain),
-            'args' => [
-                ['name' => 'key', 'type' => Type::listOf(Type::string()), 'description' => 'Aggregation key to group results by, e.g. "customer.status"'],
-                ['name' => 'value', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Aggregate values from that column, e.g "customer.status" (optional, only if type is passed)'],
-                ['name' => 'type', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Type of aggregation like "sum" or "avg" (default: null for count)'],
-                ['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'],
-                ['name' => 'sort', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Sort keys'],
-                ['name' => 'limit', 'type' => Type::int(), 'defaultValue' => 10000, 'description' => 'Slice size'],
-            ],
-            'resolve' => $this->aggregateItems($domain),
-        ];
-
-        $list['findCustomer'] = [
-            'type' => $this->types()->outputType($domain),
-            'args' => [
-                ['name' => 'code', 'type' => Type::string(), 'description' => 'Unique code'],
-                ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-            ],
-            'resolve' => $this->findItem($domain),
-        ];
-
+        $list['aggregateCustomers'] = ['type' => $this->types()->aggregate_output_type($domain), 'args' => [['name' => 'key', 'type' => Type::list_of(Type::string()), 'description' => 'Aggregation key to group results by, e.g. "customer.status"'], ['name' => 'value', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Aggregate values from that column, e.g "customer.status" (optional, only if type is passed)'], ['name' => 'type', 'type' => Type::string(), 'defaultValue' => null, 'description' => 'Type of aggregation like "sum" or "avg" (default: null for count)'], ['name' => 'filter', 'type' => Type::string(), 'defaultValue' => '{}', 'description' => 'Filter conditions'], ['name' => 'sort', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Sort keys'], ['name' => 'limit', 'type' => Type::int(), 'defaultValue' => 10000, 'description' => 'Slice size']], 'resolve' => $this->aggregate_items($domain)];
+        $list['findCustomer'] = ['type' => $this->types()->output_type($domain), 'args' => [['name' => 'code', 'type' => Type::string(), 'description' => 'Unique code'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->find_item($domain)];
         return $list;
     }
-
     /**
      * Updates the item
      *
@@ -64,39 +39,29 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      * @param array $entry Associative list of key/value pairs of the item data
      * @return \Aimeos\MShop\Common\Item\Iface Updated item
      */
-    protected function updateItem(
-        \Aimeos\MShop\Common\Manager\Iface $manager,
-        \Aimeos\MShop\Common\Item\Iface $item,
-        array $entry
-    ): \Aimeos\MShop\Common\Item\Iface {
+    protected function update_item(\Aimeos\M_Shop\Common\Manager\Iface $manager, \Aimeos\M_Shop\Common\Item\Iface $item, array $entry): \Aimeos\M_Shop\Common\Item\Iface
+    {
         $view = $this->context()->view();
-        $siteId = (string) $this->context()->user()?->getSiteId();
-
-        if ($view->access(['super']) || strlen($siteId) > 0 && !strncmp($item->getSiteId(), $siteId, strlen($siteId))) {
-            $item = $item->fromArray($entry);
-
+        $site_id = (string) $this->context()->user()?->get_site_id();
+        if ($view->access(['super']) || strlen($site_id) > 0 && !strncmp($item->get_site_id(), $site_id, strlen($site_id))) {
+            $item = $item->from_array($entry);
             if ($view->access(['super', 'admin'])) {
-                $item->setGroups(array_unique($entry['groups'] ?? []));
+                $item->set_groups(array_unique($entry['groups'] ?? []));
             }
-
-            if ($view->access(['super', 'admin']) || $item->getId() === $this->context()->user()?->getId()) {
-                !isset($entry['customer.password']) ?: $item->setPassword($entry['customer.password']);
-                !isset($entry['customer.code']) ?: $item->setCode($entry['customer.code']);
+            if ($view->access(['super', 'admin']) || $item->get_id() === $this->context()->user()?->get_id()) {
+                !isset($entry['customer.password']) ?: $item->set_password($entry['customer.password']);
+                !isset($entry['customer.code']) ?: $item->set_code($entry['customer.code']);
             }
-
-            if (isset($entry['address']) && $item instanceof \Aimeos\MShop\Common\Item\AddressRef\Iface) {
-                $item = $this->updateAddresses($manager, $item, $entry['address']);
+            if (isset($entry['address']) && $item instanceof \Aimeos\M_Shop\Common\Item\Address_Ref\Iface) {
+                $item = $this->update_addresses($manager, $item, $entry['address']);
             }
-
-            if (isset($entry['lists']) && $item instanceof \Aimeos\MShop\Common\Item\ListsRef\Iface) {
-                $item = $this->updateLists($manager, $item, $entry['lists']);
+            if (isset($entry['lists']) && $item instanceof \Aimeos\M_Shop\Common\Item\Lists_Ref\Iface) {
+                $item = $this->update_lists($manager, $item, $entry['lists']);
             }
-
-            if (isset($entry['property']) && $item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface) {
-                $item = $this->updateProperties($manager, $item, $entry['property']);
+            if (isset($entry['property']) && $item instanceof \Aimeos\M_Shop\Common\Item\Property_Ref\Iface) {
+                $item = $this->update_properties($manager, $item, $entry['property']);
             }
         }
-
         return $item;
     }
 }

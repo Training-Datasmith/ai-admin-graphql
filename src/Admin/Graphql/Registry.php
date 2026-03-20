@@ -1,22 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2022-2026
  * @package Admin
  * @subpackage GraphQL
  */
-
 namespace Aimeos\Admin\Graphql;
 
-use Aimeos\MShop\Common\Item\Iface as ItemIface;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
-
+use Aimeos\M_Shop\Common\Item\Iface as ItemIface;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Object_Type;
+use Graph_Ql\Type\Definition\Resolve_Info;
+use Graph_Ql\Type\Definition\Type;
 /**
  * Type registry for defining the GraphQL types
  *
@@ -25,104 +22,77 @@ use GraphQL\Type\Definition\Type;
  */
 class Registry
 {
-    private \Aimeos\MShop\ContextIface $context;
+    private \Aimeos\M_Shop\Context_Iface $context;
     private array $types = [];
-
     /**
      * Initializes the object
      *
      * @param \Aimeos\MShop\ContextIface $context Context object
      */
-    public function __construct(\Aimeos\MShop\ContextIface $context)
+    public function __construct(\Aimeos\M_Shop\Context_Iface $context)
     {
         $this->context = $context;
     }
-
     /**
      * Defines the GraphQL input types
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\InputObjectType Input type definition
      */
-    public function inputType(string $path): InputObjectType
+    public function input_type(string $path): Input_Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'Input';
-
-        return $this->types[$name] ?? $this->types[$name] = new InputObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-                $list = $this->fields($manager->getSearchAttributes(false));
-                $item = $manager->create();
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\AddressRef\Iface) {
-                    $list['address'] = $this->addressInputType($path . '/address');
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\ListsRef\Iface) {
-                    $list['lists'] = $this->listsInputType($path . '/lists');
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface) {
-                    $list['property'] = Type::listOf($this->inputType($path . '/property'));
-                }
-                if ($item instanceof \Aimeos\MShop\Product\Item\Iface) {
-                    $list['stock'] = Type::listOf($this->inputType('stock'));
-                }
-
-                return $list;
-            },
-            'parseValue' => fn (array $values) => $this->prefix($path, $values),
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Input_Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            $list = $this->fields($manager->get_search_attributes(false));
+            $item = $manager->create();
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Address_Ref\Iface) {
+                $list['address'] = $this->address_input_type($path . '/address');
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Lists_Ref\Iface) {
+                $list['lists'] = $this->lists_input_type($path . '/lists');
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Property_Ref\Iface) {
+                $list['property'] = Type::list_of($this->input_type($path . '/property'));
+            }
+            if ($item instanceof \Aimeos\M_Shop\Product\Item\Iface) {
+                $list['stock'] = Type::list_of($this->input_type('stock'));
+            }
+            return $list;
+        }, 'parseValue' => fn(array $values) => $this->prefix($path, $values)]);
     }
-
     /**
      * Defines the GraphQL address input type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\InputObjectType Input type definition
      */
-    public function addressInputType(string $path): InputObjectType
+    public function address_input_type(string $path): Input_Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'Input';
-
-        return $this->types[$name] ?? $this->types[$name] = new InputObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-                return $this->fields($manager->getSearchAttributes(false));
-            },
-            'parseValue' => fn (array $values) => $this->prefix($path, $values),
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Input_Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            return $this->fields($manager->get_search_attributes(false));
+        }, 'parseValue' => fn(array $values) => $this->prefix($path, $values)]);
     }
-
     /**
      * Defines the GraphQL lists input type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\InputObjectType Input type definition
      */
-    public function listsInputType(string $path): InputObjectType
+    public function lists_input_type(string $path): Input_Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'refInput';
-
-        return $this->types[$name] ?? $this->types[$name] = new InputObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                if ($domains = $this->context->config()->get('admin/graphql/lists-domains', [])) {
-                    foreach ($domains as $domain) {
-                        $list[str_replace('/', '', $domain)] = Type::listOf($this->listsRefInputType($path, $domain));
-                    }
+        return $this->types[$name] ?? $this->types[$name] = new Input_Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            if ($domains = $this->context->config()->get('admin/graphql/lists-domains', [])) {
+                foreach ($domains as $domain) {
+                    $list[str_replace('/', '', $domain)] = Type::list_of($this->lists_ref_input_type($path, $domain));
                 }
-
-                return $list;
-            },
-        ]);
+            }
+            return $list;
+        }]);
     }
-
     /**
      * Defines the GraphQL lists input types referenced by lists
      *
@@ -130,217 +100,122 @@ class Registry
      * @param string $domain Domain name of the referenced item
      * @return \GraphQL\Type\Definition\InputObjectType Input type definition
      */
-    public function listsRefInputType(string $path, string $domain): InputObjectType
+    public function lists_ref_input_type(string $path, string $domain): Input_Object_Type
     {
         $name = str_replace('/', '', ucwords($path . '/' . $domain, '/')) . 'Input';
-
-        return $this->types[$name] ?? $this->types[$name] = new InputObjectType([
-            'name' => $name,
-            'fields' => function () use ($path, $domain): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-
-                $list = $this->fields($manager->getSearchAttributes(false));
-                $list['item'] = $this->inputType($domain);
-
-                return $list;
-            },
-            'parseValue' => fn (array $values) => $this->prefix($path, $values),
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Input_Object_Type(['name' => $name, 'fields' => function () use ($path, $domain): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            $list = $this->fields($manager->get_search_attributes(false));
+            $list['item'] = $this->input_type($domain);
+            return $list;
+        }, 'parseValue' => fn(array $values) => $this->prefix($path, $values)]);
     }
-
     /**
      * Defines the GraphQL output types
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function outputType(string $path): ObjectType
+    public function output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'Output';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-                $list = $this->fields($manager->getSearchAttributes(false));
-                $item = $manager->create();
-
-                if ($item instanceof \Aimeos\MShop\Customer\Item\Iface) {
-                    $list['groups'] = [
-                        'type' => Type::listOf(Type::String()),
-                        'description' => 'List of group IDs assigned to the account',
-                        'resolve' => fn ($item, $args) => $item->getGroups(),
-                    ];
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\AddressRef\Iface) {
-                    $list['address'] = Type::listOf($this->addressOutputType($path . '/address'));
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\Tree\Iface) {
-                    $list['children'] = Type::listOf($this->treeOutputType($path));
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\ListsRef\Iface) {
-                    $list['lists'] = [
-                        'type' => $this->listsOutputType($path . '/lists'),
-                        'resolve' => fn (ItemIface $item, array $args) => $item,
-                    ];
-                }
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface) {
-                    $list['property'] = [
-                        'type' => Type::listOf($this->propertyOutputType($path . '/property')),
-                        'args' => [
-                            'type' => Type::listOf(Type::String()),
-                        ],
-                        'resolve' => fn ($item, $args) => $item->getPropertyItems($args['type'] ?? null, false),
-                    ];
-                }
-
-                if ($item instanceof \Aimeos\MShop\Product\Item\Iface) {
-                    $list['stock'] = [
-                        'type' => Type::listOf($this->stockOutputType()),
-                        'args' => [
-                            'type' => Type::listOf(Type::String()),
-                        ],
-                        'resolve' => fn ($item, $args) => $item->getStockItems($args['type'] ?? null, false),
-                    ];
-                }
-
-                return $list;
-            },
-            'resolveField' => fn (ItemIface $item, array $args, $context, ResolveInfo $info) => $this->resolve($item, $path, $info->fieldName),
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            $list = $this->fields($manager->get_search_attributes(false));
+            $item = $manager->create();
+            if ($item instanceof \Aimeos\M_Shop\Customer\Item\Iface) {
+                $list['groups'] = ['type' => Type::list_of(Type::String()), 'description' => 'List of group IDs assigned to the account', 'resolve' => fn($item, $args) => $item->get_groups()];
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Address_Ref\Iface) {
+                $list['address'] = Type::list_of($this->address_output_type($path . '/address'));
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Tree\Iface) {
+                $list['children'] = Type::list_of($this->tree_output_type($path));
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Lists_Ref\Iface) {
+                $list['lists'] = ['type' => $this->lists_output_type($path . '/lists'), 'resolve' => fn(Item_Iface $item, array $args) => $item];
+            }
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Property_Ref\Iface) {
+                $list['property'] = ['type' => Type::list_of($this->property_output_type($path . '/property')), 'args' => ['type' => Type::list_of(Type::String())], 'resolve' => fn($item, $args) => $item->get_property_items($args['type'] ?? null, false)];
+            }
+            if ($item instanceof \Aimeos\M_Shop\Product\Item\Iface) {
+                $list['stock'] = ['type' => Type::list_of($this->stock_output_type()), 'args' => ['type' => Type::list_of(Type::String())], 'resolve' => fn($item, $args) => $item->get_stock_items($args['type'] ?? null, false)];
+            }
+            return $list;
+        }, 'resolveField' => fn(Item_Iface $item, array $args, $context, Resolve_Info $info) => $this->resolve($item, $path, $info->field_name)]);
     }
-
     /**
      * Defines the GraphQL address output type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function addressOutputType(string $path): ObjectType
+    public function address_output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'Output';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-                return $this->fields($manager->getSearchAttributes(false));
-            },
-            'resolveField' => function (ItemIface $item, array $args, $context, ResolveInfo $info) use ($path) {
-
-                if ($info->fieldName === 'address' && $item instanceof \Aimeos\MShop\Common\Item\AddressRef\Iface) {
-                    return $item->getAddressItems();
-                }
-
-                return $this->resolve($item, $path, $info->fieldName);
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            return $this->fields($manager->get_search_attributes(false));
+        }, 'resolveField' => function (Item_Iface $item, array $args, $context, Resolve_Info $info) use ($path) {
+            if ($info->field_name === 'address' && $item instanceof \Aimeos\M_Shop\Common\Item\Address_Ref\Iface) {
+                return $item->get_address_items();
+            }
+            return $this->resolve($item, $path, $info->field_name);
+        }]);
     }
-
     /**
      * Defines the GraphQL tree output type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function aggregateOutputType(string $path): ObjectType
+    public function aggregate_output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'AggregateOutput';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => fn () => [
-                    'aggregates' => Type::string(),
-                ],
-            'resolveField' => fn (array $entry, array $args, $context, ResolveInfo $info) => json_encode($entry, JSON_FORCE_OBJECT),
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => fn() => ['aggregates' => Type::string()], 'resolveField' => fn(array $entry, array $args, $context, Resolve_Info $info) => json_encode($entry, JSON_FORCE_OBJECT)]);
     }
-
     /**
      * Defines the GraphQL config output type
      *
      * @param string $path Path of the domain to retrieve the configuration
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function configOutputType(string $path): ObjectType
+    public function config_output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'ConfigOutput';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => fn () => [
-                    'code' => [
-                        'name' => 'code',
-                        'type' => Type::String(),
-                    ],
-                    'label' => [
-                        'name' => 'label',
-                        'type' => Type::String(),
-                    ],
-                    'type' => [
-                        'name' => 'type',
-                        'type' => Type::String(),
-                    ],
-                    'required' => [
-                        'name' => 'required',
-                        'type' => Type::Boolean(),
-                    ],
-                    'default' => [
-                        'name' => 'default',
-                        'type' => \Aimeos\GraphQL\Type\Definition\Json::type(),
-                    ],
-                ],
-            'resolveField' => function ($item, array $args, $context, ResolveInfo $info) {
-                switch ($info->fieldName) {
-                    case 'code': return $item->getCode();
-                    case 'label': return $item->getLabel();
-                    case 'type': return $item->getType();
-                    case 'required': return $item->isRequired();
-                    case 'default': return $item->getDefault();
-                }
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => fn() => ['code' => ['name' => 'code', 'type' => Type::String()], 'label' => ['name' => 'label', 'type' => Type::String()], 'type' => ['name' => 'type', 'type' => Type::String()], 'required' => ['name' => 'required', 'type' => Type::Boolean()], 'default' => ['name' => 'default', 'type' => \Aimeos\Graph_Ql\Type\Definition\Json::type()]], 'resolveField' => function ($item, array $args, $context, Resolve_Info $info) {
+            switch ($info->field_name) {
+                case 'code':
+                    return $item->get_code();
+                case 'label':
+                    return $item->get_label();
+                case 'type':
+                    return $item->get_type();
+                case 'required':
+                    return $item->is_required();
+                case 'default':
+                    return $item->get_default();
+            }
+        }]);
     }
-
     /**
      * Defines the GraphQL list reference output type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function listsOutputType(string $path): ObjectType
+    public function lists_output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'refOutput';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                if ($domains = $this->context->config()->get('admin/graphql/lists-domains', [])) {
-                    foreach ($domains as $domain) {
-                        $list[str_replace('/', '', $domain)] = [
-                            'type' => Type::listOf($this->listsRefOutputType($path, $domain)),
-                            'args' => [
-                                'listtype' => Type::listOf(Type::String()),
-                                'type' => Type::listOf(Type::String()),
-                            ],
-                            'resolve' => fn ($item, $args) => $item->getListItems($domain, $args['listtype'] ?? null, $args['type'] ?? null, false),
-                        ];
-                    }
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            if ($domains = $this->context->config()->get('admin/graphql/lists-domains', [])) {
+                foreach ($domains as $domain) {
+                    $list[str_replace('/', '', $domain)] = ['type' => Type::list_of($this->lists_ref_output_type($path, $domain)), 'args' => ['listtype' => Type::list_of(Type::String()), 'type' => Type::list_of(Type::String())], 'resolve' => fn($item, $args) => $item->get_list_items($domain, $args['listtype'] ?? null, $args['type'] ?? null, false)];
                 }
-
-                return $list;
-            },
-        ]);
+            }
+            return $list;
+        }]);
     }
-
     /**
      * Defines the GraphQL lists output type
      *
@@ -348,60 +223,40 @@ class Registry
      * @param string $domain Domain name of the referenced item
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function listsRefOutputType(string $path, string $domain): ObjectType
+    public function lists_ref_output_type(string $path, string $domain): Object_Type
     {
         $name = str_replace('/', '', ucwords($path . '/' . $domain, '/')) . 'Output';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function () use ($path, $domain): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-
-                $list = $this->fields($manager->getSearchAttributes(false));
-                $list['item'] = $this->outputType($domain);
-
-                return $list;
-            },
-            'resolveField' => function (ItemIface $item, array $args, $context, ResolveInfo $info) use ($path) {
-
-                if ($info->fieldName === 'item' && $item instanceof \Aimeos\MShop\Common\Item\Lists\Iface) {
-                    return $item->getRefItem();
-                }
-
-                return $this->resolve($item, $path, $info->fieldName);
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function () use ($path, $domain): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            $list = $this->fields($manager->get_search_attributes(false));
+            $list['item'] = $this->output_type($domain);
+            return $list;
+        }, 'resolveField' => function (Item_Iface $item, array $args, $context, Resolve_Info $info) use ($path) {
+            if ($info->field_name === 'item' && $item instanceof \Aimeos\M_Shop\Common\Item\Lists\Iface) {
+                return $item->get_ref_item();
+            }
+            return $this->resolve($item, $path, $info->field_name);
+        }]);
     }
-
     /**
      * Defines the GraphQL property output type
      *
      * @param string $path Path of the manager which is using the property item
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function propertyOutputType(string $path): ObjectType
+    public function property_output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'Output';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-                return $this->fields($manager->getSearchAttributes(false));
-            },
-            'resolveField' => function (ItemIface $item, array $args, $context, ResolveInfo $info) use ($path) {
-
-                if ($info->fieldName === 'property' && $item instanceof \Aimeos\MShop\Common\Item\PropertyRef\Iface) {
-                    return $item->getPropertyItems();
-                }
-
-                return $this->resolve($item, $path, $info->fieldName);
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            return $this->fields($manager->get_search_attributes(false));
+        }, 'resolveField' => function (Item_Iface $item, array $args, $context, Resolve_Info $info) use ($path) {
+            if ($info->field_name === 'property' && $item instanceof \Aimeos\M_Shop\Common\Item\Property_Ref\Iface) {
+                return $item->get_property_items();
+            }
+            return $this->resolve($item, $path, $info->field_name);
+        }]);
     }
-
     /**
      * Defines the GraphQL search output types
      *
@@ -409,144 +264,85 @@ class Registry
      * @param Closure|null Output type method (default: outputType())
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function searchOutputType(string $path, ?\Closure $method = null): ObjectType
+    public function search_output_type(string $path, ?\Closure $method = null): Object_Type
     {
         $name = 'search' . str_replace('/', '', ucwords($path)) . 'Output';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => fn () => [
-                    'items' => [
-                        'name' => 'items',
-                        'description' => 'List of items',
-                        'type' => Type::listOf($method ? $method($path) : $this->outputType($path)),
-                    ],
-                    'total' => [
-                        'name' => 'total',
-                        'description' => 'Total number of items',
-                        'type' => Type::int(),
-                    ],
-                ],
-            'resolveField' => fn (array $map, array $args, $context, ResolveInfo $info) => $map[$info->fieldName] ?? null,
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => fn() => ['items' => ['name' => 'items', 'description' => 'List of items', 'type' => Type::list_of($method ? $method($path) : $this->output_type($path))], 'total' => ['name' => 'total', 'description' => 'Total number of items', 'type' => Type::int()]], 'resolveField' => fn(array $map, array $args, $context, Resolve_Info $info) => $map[$info->field_name] ?? null]);
     }
-
     /**
      * Defines the GraphQL locale site output types
      *
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function siteOutputType(): ObjectType
+    public function site_output_type(): Object_Type
     {
         $name = 'siteOutputType';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function (): array {
-                $manager = \Aimeos\MShop::create($this->context, 'locale/site');
-
-                $list = $this->fields($manager->getSearchAttributes(false));
-                $list['children'] = Type::listOf($this->siteOutputType());
-                $list['hasChildren'] = [
-                    'name' => 'hasChildren',
-                    'description' => 'If node has children',
-                    'type' => Type::boolean(),
-                ];
-
-                return $list;
-            },
-            'resolveField' => function (ItemIface $item, array $args, $context, ResolveInfo $info) {
-
-                if (!$item instanceof \Aimeos\MShop\Common\Item\Tree\Iface) {
-                    return $this->resolve($item, 'locale/site', $info->fieldName);
-                }
-                if ($info->fieldName === 'children') {
-                    return $item->getChildren();
-                }
-                if ($info->fieldName === 'hasChildren') {
-                    return $item->hasChildren();
-                }
-
-                return $this->resolve($item, 'locale/site', $info->fieldName);
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function (): array {
+            $manager = \Aimeos\M_Shop::create($this->context, 'locale/site');
+            $list = $this->fields($manager->get_search_attributes(false));
+            $list['children'] = Type::list_of($this->site_output_type());
+            $list['hasChildren'] = ['name' => 'hasChildren', 'description' => 'If node has children', 'type' => Type::boolean()];
+            return $list;
+        }, 'resolveField' => function (Item_Iface $item, array $args, $context, Resolve_Info $info) {
+            if (!$item instanceof \Aimeos\M_Shop\Common\Item\Tree\Iface) {
+                return $this->resolve($item, 'locale/site', $info->field_name);
+            }
+            if ($info->field_name === 'children') {
+                return $item->get_children();
+            }
+            if ($info->field_name === 'hasChildren') {
+                return $item->has_children();
+            }
+            return $this->resolve($item, 'locale/site', $info->field_name);
+        }]);
     }
-
     /**
      * Defines the GraphQL stock output type
      *
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    protected function stockOutputType(): ObjectType
+    protected function stock_output_type(): Object_Type
     {
         $name = 'StockOutputType';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function (): array {
-
-                $manager = \Aimeos\MShop::create($this->context, 'stock');
-                return $this->fields($manager->getSearchAttributes(false));
-            },
-            'resolveField' => function (ItemIface $item, array $args, $context, ResolveInfo $info) {
-
-                if ($info->fieldName === 'stock' && $item instanceof \Aimeos\MShop\Product\Item\Iface) {
-                    return $item->getStockItems();
-                }
-
-                return $this->resolve($item, 'stock', $info->fieldName);
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function (): array {
+            $manager = \Aimeos\M_Shop::create($this->context, 'stock');
+            return $this->fields($manager->get_search_attributes(false));
+        }, 'resolveField' => function (Item_Iface $item, array $args, $context, Resolve_Info $info) {
+            if ($info->field_name === 'stock' && $item instanceof \Aimeos\M_Shop\Product\Item\Iface) {
+                return $item->get_stock_items();
+            }
+            return $this->resolve($item, 'stock', $info->field_name);
+        }]);
     }
-
     /**
      * Defines the GraphQL tree output type
      *
      * @param string $path Path of the domain manager
      * @return \GraphQL\Type\Definition\ObjectType Output type definition
      */
-    public function treeOutputType(string $path): ObjectType
+    public function tree_output_type(string $path): Object_Type
     {
         $name = str_replace('/', '', ucwords($path, '/')) . 'TreeOutput';
-
-        return $this->types[$name] ?? $this->types[$name] = new ObjectType([
-            'name' => $name,
-            'fields' => function () use ($path): array {
-
-                $manager = \Aimeos\MShop::create($this->context, $path);
-                $item = $manager->create();
-
-                $list = $this->fields($manager->getSearchAttributes(false));
-                $list['children'] = Type::listOf($this->treeOutputType($path));
-                $list['hasChildren'] = [
-                    'name' => 'hasChildren',
-                    'description' => 'If node has children',
-                    'type' => Type::boolean(),
-                ];
-
-                if ($item instanceof \Aimeos\MShop\Common\Item\ListsRef\Iface) {
-                    $list['lists'] = [
-                        'type' => $this->listsOutputType($path . '/lists'),
-                        'resolve' => fn (ItemIface $item, array $args) => $item,
-                    ];
-                }
-
-                return $list;
-            },
-            'resolveField' => function (ItemIface $item, array $args, $context, ResolveInfo $info) use ($path) {
-
-                if ($info->fieldName === 'children') {
-                    return $item->getChildren();
-                }
-                if ($info->fieldName === 'hasChildren') {
-                    return $item->hasChildren();
-                }
-
-                return $this->resolve($item, $path, $info->fieldName);
-            },
-        ]);
+        return $this->types[$name] ?? $this->types[$name] = new Object_Type(['name' => $name, 'fields' => function () use ($path): array {
+            $manager = \Aimeos\M_Shop::create($this->context, $path);
+            $item = $manager->create();
+            $list = $this->fields($manager->get_search_attributes(false));
+            $list['children'] = Type::list_of($this->tree_output_type($path));
+            $list['hasChildren'] = ['name' => 'hasChildren', 'description' => 'If node has children', 'type' => Type::boolean()];
+            if ($item instanceof \Aimeos\M_Shop\Common\Item\Lists_Ref\Iface) {
+                $list['lists'] = ['type' => $this->lists_output_type($path . '/lists'), 'resolve' => fn(Item_Iface $item, array $args) => $item];
+            }
+            return $list;
+        }, 'resolveField' => function (Item_Iface $item, array $args, $context, Resolve_Info $info) use ($path) {
+            if ($info->field_name === 'children') {
+                return $item->get_children();
+            }
+            if ($info->field_name === 'hasChildren') {
+                return $item->has_children();
+            }
+            return $this->resolve($item, $path, $info->field_name);
+        }]);
     }
-
     /**
      * Returns the field types for the passed search attributes
      *
@@ -556,22 +352,14 @@ class Registry
     public function fields(array $attrs): array
     {
         $list = [];
-
         foreach ($attrs as $attr) {
-            if (!str_contains($attr->getCode(), ':')) {
-                $code = $this->name($attr->getCode());
-
-                $list[$code] = [
-                    'name' => $code,
-                    'description' => $attr->getLabel(),
-                    'type' => $code !== 'id' ? $this->type($attr->getType()) : Type::String(),
-                ];
+            if (!str_contains($attr->get_code(), ':')) {
+                $code = $this->name($attr->get_code());
+                $list[$code] = ['name' => $code, 'description' => $attr->get_label(), 'type' => $code !== 'id' ? $this->type($attr->get_type()) : Type::String()];
             }
         }
-
         return $list;
     }
-
     /**
      * Adds the prefix for the passed domain
      *
@@ -583,7 +371,6 @@ class Registry
     {
         $map = [];
         $domain = str_replace('/', '.', $domain);
-
         foreach ($entry as $key => $value) {
             if (!in_array($key, ['property', 'lists', 'item'])) {
                 $map[$domain . '.' . $key] = $value;
@@ -591,10 +378,8 @@ class Registry
                 $map[$key] = $value;
             }
         }
-
         return $map;
     }
-
     /**
      * Returns the field value for the passed item, domain and name
      *
@@ -603,11 +388,10 @@ class Registry
      * @param string $name Name of the requested value
      * @return string|null Requested value
      */
-    public function resolve(ItemIface $item, string $domain, string $name)
+    public function resolve(Item_Iface $item, string $domain, string $name)
     {
         return $item->get($name) ?? $item->get(str_replace('/', '.', $domain) . '.' . $name);
     }
-
     /**
      * Returns the GraphQL type for passed Aimeos search attribute type
      *
@@ -620,11 +404,10 @@ class Registry
             'bool', 'boolean' => Type::boolean(),
             'float' => Type::float(),
             'int', 'integer' => Type::int(),
-            'json' => \Aimeos\GraphQL\Type\Definition\Json::type(),
+            'json' => \Aimeos\Graph_Ql\Type\Definition\Json::type(),
             default => Type::string(),
         };
     }
-
     /**
      * Returns the name of the field without prefix
      *

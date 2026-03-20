@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2022-2026
  * @package Admin
  * @subpackage GraphQL
  */
-
 namespace Aimeos\Admin\Graphql\Product;
 
-use GraphQL\Type\Definition\Type;
-
+use Graph_Ql\Type\Definition\Type;
 /**
  * GraphQL class for special handling of products
  *
@@ -30,19 +27,9 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
     public function query(string $domain): array
     {
         $list = parent::query($domain);
-
-        $list['findProduct'] = [
-            'type' => $this->types()->outputType($domain),
-            'args' => [
-                ['name' => 'code', 'type' => Type::string(), 'description' => 'Unique code'],
-                ['name' => 'include', 'type' => Type::listOf(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include'],
-            ],
-            'resolve' => $this->findItem($domain),
-        ];
-
+        $list['findProduct'] = ['type' => $this->types()->output_type($domain), 'args' => [['name' => 'code', 'type' => Type::string(), 'description' => 'Unique code'], ['name' => 'include', 'type' => Type::list_of(Type::string()), 'defaultValue' => [], 'description' => 'Domains to include']], 'resolve' => $this->find_item($domain)];
         return $list;
     }
-
     /**
      * Updates the item
      *
@@ -51,24 +38,17 @@ class Standard extends \Aimeos\Admin\Graphql\Standard
      * @param array $entry Associative list of key/value pairs of the item data
      * @return \Aimeos\MShop\Common\Item\Iface Updated item
      */
-    protected function updateItem(
-        \Aimeos\MShop\Common\Manager\Iface $manager,
-        \Aimeos\MShop\Common\Item\Iface $item,
-        array $entry
-    ): \Aimeos\MShop\Common\Item\Iface {
-        $item = parent::updateItem($manager, $item, $entry);
-
+    protected function update_item(\Aimeos\M_Shop\Common\Manager\Iface $manager, \Aimeos\M_Shop\Common\Item\Iface $item, array $entry): \Aimeos\M_Shop\Common\Item\Iface
+    {
+        $item = parent::update_item($manager, $item, $entry);
         if (isset($entry['product.stock'])) {
-            $stockItems = $item->getStockItems()->col(null, 'stock.type');
-
+            $stock_items = $item->get_stock_items()->col(null, 'stock.type');
             foreach ($entry['product.stock'] as $subentry) {
-                $stockItem = $stockItems->get($subentry['stock.type'] ?? null) ?: $manager->createStockItem();
-                $item->addStockItem($stockItem->fromArray($subentry));
+                $stock_item = $stock_items->get($subentry['stock.type'] ?? null) ?: $manager->create_stock_item();
+                $item->add_stock_item($stock_item->from_array($subentry));
             }
-
-            $item->deleteStockItems($stockItems);
+            $item->delete_stock_items($stock_items);
         }
-
         return $item;
     }
 }
